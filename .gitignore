@@ -1,2 +1,5 @@
 .venv
 .idea
+*.pyc
+main_service/__pycache__/
+sensors/__pycache__/
