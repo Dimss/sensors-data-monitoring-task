@@ -27,7 +27,7 @@ class MetricsSimulator(Thread):
     def run(self) -> None:
         while not self.should_terminated:
             conn, addr = self.server.accept()
-            conn.send(random.randint(-100, 2000).to_bytes(2, 'big', signed=True))
+            conn.send(random.randint(-20, 120).to_bytes(2, 'big', signed=True))
             conn.close()
         log.info("simulator terminated")
 

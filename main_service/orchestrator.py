@@ -1,6 +1,4 @@
 import asyncio
-import time
-import random
 from threading import Thread
 from loguru import logger as log
 from config import config
@@ -16,7 +14,7 @@ class MainOrchestrator(Thread):
         self._terminate = False
         self._metric_simulator_socket_path = "/tmp/metric-simulator.sock"
         self._metric_simulator = self._get_metric_simulator()
-        self._sensors_instances = []
+        self._async_tasks = []
 
     def _get_metric_simulator(self) -> simulator.MetricsSimulator:
         return simulator.MetricsSimulator(self._metric_simulator_socket_path)
@@ -32,35 +30,38 @@ class MainOrchestrator(Thread):
 
     async def _start_sensors_monitors(self):
         log.info("starting sensor metric collectors...")
-        for sensor in self.cfg.sensors:
-            if sensor.enabled:
-                self._sensors_instances.append(
-                    # create sensor instance based on the configuration
-                    getattr(
-                        importlib.import_module("sensors.sensors"),
-                        sensor.name
-                    )(self._metric_simulator_socket_path)
+        for sensor_cfg in self.cfg.sensors:
+            if sensor_cfg.enabled:
+                self._async_tasks.append(
+                    asyncio.create_task(
+                        self.stream_and_validate(
+                            # create sensor instance based on the configuration
+                            getattr(
+                                importlib.import_module("sensors.sensors"),
+                                sensor_cfg.name
+                            )(self._metric_simulator_socket_path, sensor_cfg)
+                        )
+                    )
                 )
 
-        await asyncio.gather(*self._compose_async_executors())
-
-    def _compose_async_executors(self) -> []:
-        async_executors = []
-        for i in self._sensors_instances:
-            async_executors.append(self.stream_and_validate(i))
-        return async_executors
+        await asyncio.gather(*self._async_tasks)
 
     async def stream_and_validate(self, sensor_instance):
         log.info(f"starting metric stream for {sensor_instance.get_sensor_name()}")
         async for metric in sensor_instance.read_metrics():
-            log.info(f"sensor name: {sensor_instance.get_sensor_name()} value: {metric}")
+            if sensor_instance.cfg.validRange.min > metric or metric > sensor_instance.cfg.validRange.max:
+                log.warning(
+                    f"[{sensor_instance.get_sensor_name()}] metric [{metric}] out of valid range"
+                    f" [{sensor_instance.cfg.validRange.min}:{sensor_instance.cfg.validRange.max}]"
+                    f", issuing an alert...")
+            else:
+                log.info("good")
 
     def run(self):
         self._start_metric_simulator()
         asyncio.run(self._start_sensors_monitors())
-        log.info("orchestrator is done ------------------ ")
 
     def stop(self):
         self._terminate_metric_simulator()
-        for i in self._sensors_instances:
-            i.shutdown()
+        for t in self._async_tasks:
+            t.cancel()

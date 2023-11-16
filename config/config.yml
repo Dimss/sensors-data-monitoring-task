@@ -12,5 +12,5 @@ sensors:
   - name: PressureSensor
     enabled: false
     validRange:
-      min: 900
-      max: 1100
+      min: 0
+      max: 20
