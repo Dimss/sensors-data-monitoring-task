@@ -1,0 +1,16 @@
+sensors:
+  - name: TemperatureSensor
+    enabled: true
+    validRange:
+      min: 0
+      max: 100
+  - name: HumiditySensor
+    enabled: false
+    validRange:
+      min: 0
+      max: 100
+  - name: PressureSensor
+    enabled: false
+    validRange:
+      min: 900
+      max: 1100

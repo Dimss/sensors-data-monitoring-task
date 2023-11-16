@@ -1,0 +1,5 @@
+click==8.1.7
+
+pip~=23.2.1
+setuptools~=65.5.0
+loguru~=0.7.2
