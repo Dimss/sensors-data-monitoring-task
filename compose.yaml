@@ -1,0 +1,17 @@
+services:
+  sensors-connectors:
+    environment:
+      REDIS_HOST: redis
+    image: sdma:latest
+    build: .
+    command: python main.py start sensor-connectors
+  alerter:
+    environment:
+      REDIS_HOST: redis
+      SLACK_CHANNEL: "<SET_SLACK_CHANNEL_HERE>"
+      SLACK_TOKEN: "<SET_SLACK_TOKEN_HERE>"
+    image: sdma:latest
+    build: .
+    command: python main.py start alerter
+  redis:
+    image: redis

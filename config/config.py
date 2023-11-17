@@ -1,6 +1,7 @@
 import yaml
 from pathlib import Path
 from pydantic import BaseModel
+from os import environ
 
 CONFIG_FILE_NAME = "config.yml"
 CONFIG_FILE_PATH = Path(__file__).with_name(CONFIG_FILE_NAME)
@@ -45,4 +46,17 @@ class Config(BaseModel):
 def load_config() -> Config:
     with open(CONFIG_FILE_PATH, 'r') as file:
         config = yaml.safe_load(file)
-        return Config(**config)
+        return _override_with_env_var(Config(**config))
+
+
+def _override_with_env_var(cfg: Config) -> Config:
+    if environ.get('REDIS_HOST') is not None:
+        cfg.queue.redis.host = environ.get('REDIS_HOST')
+
+    if environ.get('SLACK_TOKEN') is not None:
+        cfg.alerts.slack.token = environ.get('SLACK_TOKEN')
+
+    if environ.get('SLACK_CHANNEL') is not None:
+        cfg.alerts.slack.channel = environ.get('SLACK_CHANNEL')
+
+    return cfg
