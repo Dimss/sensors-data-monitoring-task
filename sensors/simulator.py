@@ -4,7 +4,10 @@ import random
 from threading import Thread
 from loguru import logger as log
 
-
+# Metrics simulator acting as
+# Unix domain socket server
+# on each connect return
+# random value within configured scope
 class MetricsSimulator(Thread):
 
     def __init__(self, socket_path: str, *args, **kwargs):
@@ -27,6 +30,7 @@ class MetricsSimulator(Thread):
     def run(self) -> None:
         while not self.should_terminated:
             conn, addr = self.server.accept()
+            # send random value to simulate sensor metric
             conn.send(random.randint(-20, 120).to_bytes(2, 'big', signed=True))
             conn.close()
         log.info("simulator terminated")

@@ -34,6 +34,8 @@ class MainOrchestrator(Thread):
     async def _start_sensors_monitors(self):
         log.info("starting sensor metric collectors...")
         for sensor_cfg in self.cfg.sensors:
+            # append to tasks list
+            # each enabled sensors
             if sensor_cfg.enabled:
                 self._async_tasks.append(
                     asyncio.create_task(
@@ -46,11 +48,13 @@ class MainOrchestrator(Thread):
                         )
                     )
                 )
-
+        # start and await for the tasks
         await asyncio.gather(*self._async_tasks)
 
     async def stream_and_validate(self, sensor_instance):
         log.info(f"starting metric stream for {sensor_instance.get_sensor_name()}")
+        # read the metric and in case
+        # of range violation issue an alert
         async for metric in sensor_instance.read_metrics():
             if sensor_instance.cfg.validRange.min > metric or metric > sensor_instance.cfg.validRange.max:
                 message = {
@@ -64,7 +68,9 @@ class MainOrchestrator(Thread):
                 log.info(f"[{sensor_instance.get_sensor_name()}] metric [{metric}] in valid range")
 
     def run(self):
+        # start the metric simulator in separate thread
         self._start_metric_simulator()
+        # start the async event loop
         asyncio.run(self._start_sensors_monitors())
 
     def stop(self):

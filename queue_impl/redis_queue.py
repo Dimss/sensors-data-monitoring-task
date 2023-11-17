@@ -37,6 +37,7 @@ class RedisQueue:
                     if message:
                         yield message
                 except redis.ConnectionError:
+                    # handle redis disconnects
                     self.set_redis_connection()
                     self.pubsub.subscribe(self.cfg.channel)
         except asyncio.CancelledError:

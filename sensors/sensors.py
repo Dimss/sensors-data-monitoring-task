@@ -11,6 +11,8 @@ class BaseSensor:
         self.socket_path = socket_path
         self.cfg = cfg
 
+    # connect to unix socket, and read
+    # the sensor metric value
     def read_metrics(self) -> int:
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
             client.connect(self.socket_path)
@@ -26,6 +28,7 @@ class TemperatureSensor(BaseSensor):
     def __init__(self, socket_path: str, cfg: config.SensorConfig):
         super().__init__(self.__class__.__name__, socket_path, cfg)
 
+    # async method for reading metrics values
     async def read_metrics(self) -> int:
         try:
             while True:
@@ -44,6 +47,7 @@ class HumiditySensor(BaseSensor):
     def __init__(self, socket_path: str, cfg: config.SensorConfig):
         super().__init__(self.__class__.__name__, socket_path, cfg)
 
+    # async method for reading metrics values
     async def read_metrics(self) -> int:
         try:
             while True:
@@ -62,6 +66,7 @@ class PressureSensor(BaseSensor):
     def __init__(self, socket_path: str, cfg: config.SensorConfig):
         super().__init__(self.__class__.__name__, socket_path, cfg)
 
+    # async method for reading metrics values
     async def read_metrics(self) -> int:
         try:
             while True:
