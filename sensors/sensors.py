@@ -6,7 +6,7 @@ from config import config
 
 class BaseSensor:
     def __init__(self, sensor_name: str, socket_path: str, cfg: config.SensorConfig):
-        self.read_interval = 0.1
+        self.read_interval = 1
         self.sensor_name = sensor_name
         self.socket_path = socket_path
         self.cfg = cfg

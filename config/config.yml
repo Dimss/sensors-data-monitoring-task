@@ -1,3 +1,7 @@
+alerts:
+  slack:
+    channel: C06617RUDV4
+    token: Bearer xoxb-...
 queue:
   redis:
     host: localhost
@@ -10,12 +14,12 @@ sensors:
       min: 0
       max: 100
   - name: HumiditySensor
-    enabled: false
+    enabled: true
     validRange:
       min: 0
       max: 100
   - name: PressureSensor
-    enabled: false
+    enabled: true
     validRange:
       min: 0
       max: 20

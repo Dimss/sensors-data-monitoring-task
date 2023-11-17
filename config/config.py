@@ -6,6 +6,15 @@ CONFIG_FILE_NAME = "config.yml"
 CONFIG_FILE_PATH = Path(__file__).with_name(CONFIG_FILE_NAME)
 
 
+class SlackConfig(BaseModel):
+    channel: str
+    token: str
+
+
+class Alerts(BaseModel):
+    slack: SlackConfig
+
+
 class RedisQueue(BaseModel):
     host: str
     port: int
@@ -30,6 +39,7 @@ class SensorConfig(BaseModel):
 class Config(BaseModel):
     sensors: list[SensorConfig]
     queue: Queue
+    alerts: Alerts
 
 
 def load_config() -> Config:

@@ -23,7 +23,7 @@ class RedisQueue:
     def conn_ok(self) -> bool:
         try:
             self.redis.ping()
-        except redis.ConnectionError as e:
+        except redis.ConnectionError:
             return False
         return True
 
@@ -36,15 +36,15 @@ class RedisQueue:
                     message = self.pubsub.get_message()
                     if message:
                         yield message
-                except redis.ConnectionError as e:
+                except redis.ConnectionError:
                     self.set_redis_connection()
                     self.pubsub.subscribe(self.cfg.channel)
-        except asyncio.CancelledError as e:
+        except asyncio.CancelledError:
             log.info("shutdown redis queue")
 
     def publish(self, msg: str):
         try:
             self.redis.publish(self.cfg.channel, msg)
-        except redis.ConnectionError as e:
+        except redis.ConnectionError:
             self.set_redis_connection()
             self.publish(msg)

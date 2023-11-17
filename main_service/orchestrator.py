@@ -1,4 +1,5 @@
 import asyncio
+import json
 from threading import Thread
 from loguru import logger as log
 from config import config
@@ -52,11 +53,13 @@ class MainOrchestrator(Thread):
         log.info(f"starting metric stream for {sensor_instance.get_sensor_name()}")
         async for metric in sensor_instance.read_metrics():
             if sensor_instance.cfg.validRange.min > metric or metric > sensor_instance.cfg.validRange.max:
-                msg = f"[{sensor_instance.get_sensor_name()}] metric [{metric}] out of valid range"
-                f" [{sensor_instance.cfg.validRange.min}:{sensor_instance.cfg.validRange.max}]"
-                f", issuing an alert..."
-                self.queue.publish(msg)
-                log.warning(msg)
+                message = {
+                    'sensor': sensor_instance.get_sensor_name(),
+                    'metric_value': metric,
+                    'valid_range': [sensor_instance.cfg.validRange.min, sensor_instance.cfg.validRange.max]
+                }
+                self.queue.publish(json.dumps(message))
+                log.warning(f"{message}, issuing alert")
             else:
                 log.info(f"[{sensor_instance.get_sensor_name()}] metric [{metric}] in valid range")
 
