@@ -6,6 +6,16 @@ CONFIG_FILE_NAME = "config.yml"
 CONFIG_FILE_PATH = Path(__file__).with_name(CONFIG_FILE_NAME)
 
 
+class RedisQueue(BaseModel):
+    host: str
+    port: int
+    channel: str
+
+
+class Queue(BaseModel):
+    redis: RedisQueue
+
+
 class SensorValidRange(BaseModel):
     min: int
     max: int
@@ -19,6 +29,7 @@ class SensorConfig(BaseModel):
 
 class Config(BaseModel):
     sensors: list[SensorConfig]
+    queue: Queue
 
 
 def load_config() -> Config:

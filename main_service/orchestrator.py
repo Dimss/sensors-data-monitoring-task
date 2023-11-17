@@ -2,26 +2,16 @@ import asyncio
 from threading import Thread
 from loguru import logger as log
 from config import config
-from sensors import sensors, simulator
+from sensors import simulator
 import importlib
-
-
-async def stream_and_validate(sensor_instance):
-    log.info(f"starting metric stream for {sensor_instance.get_sensor_name()}")
-    async for metric in sensor_instance.read_metrics():
-        if sensor_instance.cfg.validRange.min > metric or metric > sensor_instance.cfg.validRange.max:
-            log.warning(
-                f"[{sensor_instance.get_sensor_name()}] metric [{metric}] out of valid range"
-                f" [{sensor_instance.cfg.validRange.min}:{sensor_instance.cfg.validRange.max}]"
-                f", issuing an alert...")
-        else:
-            log.info(f"[{sensor_instance.get_sensor_name()}] metric [{metric}] in valid range")
+from queue_impl import redis_queue as q
 
 
 class MainOrchestrator(Thread):
 
     def __init__(self, cfg: config.Config, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.queue = q.RedisQueue(cfg.queue.redis)
         self.cfg = cfg
         self._terminate = False
         self._metric_simulator_socket_path = "/tmp/metric-simulator.sock"
@@ -46,7 +36,7 @@ class MainOrchestrator(Thread):
             if sensor_cfg.enabled:
                 self._async_tasks.append(
                     asyncio.create_task(
-                        stream_and_validate(
+                        self.stream_and_validate(
                             # create sensor instance based on the configuration
                             getattr(
                                 importlib.import_module("sensors.sensors"),
@@ -57,6 +47,18 @@ class MainOrchestrator(Thread):
                 )
 
         await asyncio.gather(*self._async_tasks)
+
+    async def stream_and_validate(self, sensor_instance):
+        log.info(f"starting metric stream for {sensor_instance.get_sensor_name()}")
+        async for metric in sensor_instance.read_metrics():
+            if sensor_instance.cfg.validRange.min > metric or metric > sensor_instance.cfg.validRange.max:
+                msg = f"[{sensor_instance.get_sensor_name()}] metric [{metric}] out of valid range"
+                f" [{sensor_instance.cfg.validRange.min}:{sensor_instance.cfg.validRange.max}]"
+                f", issuing an alert..."
+                self.queue.publish(msg)
+                log.warning(msg)
+            else:
+                log.info(f"[{sensor_instance.get_sensor_name()}] metric [{metric}] in valid range")
 
     def run(self):
         self._start_metric_simulator()

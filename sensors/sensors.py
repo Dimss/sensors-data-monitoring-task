@@ -6,6 +6,7 @@ from config import config
 
 class BaseSensor:
     def __init__(self, sensor_name: str, socket_path: str, cfg: config.SensorConfig):
+        self.read_interval = 0.1
         self.sensor_name = sensor_name
         self.socket_path = socket_path
         self.cfg = cfg
@@ -28,7 +29,7 @@ class TemperatureSensor(BaseSensor):
     async def read_metrics(self) -> int:
         try:
             while True:
-                await asyncio.sleep(1)
+                await asyncio.sleep(self.read_interval)
                 yield super().read_metrics()
         except asyncio.CancelledError as e:
             pass
@@ -46,7 +47,7 @@ class HumiditySensor(BaseSensor):
     async def read_metrics(self) -> int:
         try:
             while True:
-                await asyncio.sleep(1)
+                await asyncio.sleep(self.read_interval)
                 yield super().read_metrics()
         except asyncio.CancelledError as e:
             pass
@@ -64,7 +65,7 @@ class PressureSensor(BaseSensor):
     async def read_metrics(self) -> int:
         try:
             while True:
-                await asyncio.sleep(1)
+                await asyncio.sleep(self.read_interval)
                 yield super().read_metrics()
         except asyncio.CancelledError as e:
             pass
