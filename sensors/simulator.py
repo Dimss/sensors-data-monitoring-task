@@ -4,6 +4,7 @@ import random
 from threading import Thread
 from loguru import logger as log
 
+
 # Metrics simulator acting as
 # Unix domain socket server
 # on each connect return

@@ -15,7 +15,7 @@
  
 * Application entry point
   * [Cli Interface](main.py) -> CLI implementation and OS signals handler
-
+ 
 ## Architecture schema
 ```
 
@@ -28,7 +28,7 @@
       |----|
 ```
 
-## Installation
+## Install & Run
 * Docker & Docker compose
   * Install docker & docker compose 
   * run `docker-compose up --build`
