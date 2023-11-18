@@ -24,7 +24,8 @@ def sensor_connectors():
     orchestrator.join()
     log.info("bye bye")
 
-
+# command to start the alert manager
+# and subscribe to the redis PubSub chanel
 @click.command()
 def alerter():
     alert_mgr = a.Alerter(config.load_config())
